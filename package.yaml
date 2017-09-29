@@ -1,5 +1,5 @@
 name: derulo
-version: 0.0.2
+version: 0.0.3
 
 category: JSON
 description: Derulo parses and renders JSON simply.
@@ -14,7 +14,6 @@ synopsis: Parse and render JSON simply.
 
 dependencies:
   - base >=4.8.2 && <4.11
-  - directory
 ghc-options:
   - -Wall
 
