@@ -1,0 +1,40 @@
+name: derulo
+version: 0.0.0
+
+category: JSON
+description: Derulo parses and renders JSON simply.
+extra-source-files:
+  - CHANGELOG.markdown
+  - README.markdown
+license-file: LICENSE.markdown
+license: MIT
+maintainer: Taylor Fausak
+synopsis: Parse and render JSON simply.
+
+dependencies:
+  - base >=4.9.1 && <4.10
+ghc-options:
+  - -Wall
+
+library:
+  source-dirs: library
+
+executables:
+  derulo:
+    dependencies:
+      - derulo
+    ghc-options:
+      - -rtsopts
+      - -threaded
+    main: Main.hs
+    source-dirs: executables
+
+tests:
+  test:
+    dependencies:
+      - doctest >=0.11.4 && <0.12
+    ghc-options:
+      - -rtsopts
+      - -threaded
+    main: Main.hs
+    source-dirs: tests
