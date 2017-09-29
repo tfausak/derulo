@@ -2,5 +2,6 @@
 *.o
 /.stack-work/
 /*.cabal
+/*.hp
 /*.prof
 /*.tix
