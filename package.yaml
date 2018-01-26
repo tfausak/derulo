@@ -1,5 +1,5 @@
 name: derulo
-version: 0.0.4
+version: 1.0.0
 
 category: JSON
 description: Derulo parses and renders JSON simply.
