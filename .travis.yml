@@ -1,46 +1,57 @@
+sudo: false
 language: generic
-
 addons:
   apt:
     packages:
       - libgmp-dev
-
 cache:
   directories:
-    - $HOME/.local/bin
-    - $HOME/.stack
-
+    - "$HOME/.local/bin"
+    - "$HOME/.stack"
 env:
   global:
     - HACKAGE_USERNAME=fozworth
-    # HACKAGE_PASSWORD
-    - secure: "MbNiNmL13TVy0ePEmU6A4dv37tTbzzoEoW6GxufeMXp0B3y1acHlmAQuyoXSdLU6lyOAF4B/jBWVhrFxL8hX6lCPTJWsz4sqqzujetlhLAh34ftEwFEeoLH/gRaLaVyu3D10lhzxPIs8D3hPGwM/+9K6+BBvNe/eC51HadYXHKnP97V5Gt2Wpt4dU8Y0stlUKRGtBipvCekJvyygoIPhUhxsEDPhCkScdkJbsqTjqoyv61A7r1szkIZ43aF6QB0uGsKXb205MGke0QQfF7/ECzBmLhmIOVT1y05eLuFgn+/mcPxYODdJqoMxLaE3lPdfvBhDvO/Qv41TvV9n85WssbHdwKi78JjT553+KgrjX7imfJf3WiwlVbwW8wumbAluvHiDdpmycZTXue+AB4vZgRyyihgTltDXeuuZ+2N+fuR9w96DmAU2Q32gRAOA/MViCItm8p47w9BkcBSxhxyLUuJhBb+U8WPe0pm7bM5OpCnPPcGLmNfXiu8fLfXbtT0Zy06uRRNEX+lbLs/zwHcfj2DTvQ9vNfCSD0jxVXtIiD6puNW/gKCc81wSU3Ye6XhYiZdurHtZYHBOCSgiwihE/wb+qYCHjeMGeTBEtYLyE6LCfrKA6u9sIrw2K7wBamydAyXA+3Fxjevrt/YemR6SPM5AKPMrCxvoWOwtiNgyx3E="
-
+    - secure: MbNiNmL13TVy0ePEmU6A4dv37tTbzzoEoW6GxufeMXp0B3y1acHlmAQuyoXSdLU6lyOAF4B/jBWVhrFxL8hX6lCPTJWsz4sqqzujetlhLAh34ftEwFEeoLH/gRaLaVyu3D10lhzxPIs8D3hPGwM/+9K6+BBvNe/eC51HadYXHKnP97V5Gt2Wpt4dU8Y0stlUKRGtBipvCekJvyygoIPhUhxsEDPhCkScdkJbsqTjqoyv61A7r1szkIZ43aF6QB0uGsKXb205MGke0QQfF7/ECzBmLhmIOVT1y05eLuFgn+/mcPxYODdJqoMxLaE3lPdfvBhDvO/Qv41TvV9n85WssbHdwKi78JjT553+KgrjX7imfJf3WiwlVbwW8wumbAluvHiDdpmycZTXue+AB4vZgRyyihgTltDXeuuZ+2N+fuR9w96DmAU2Q32gRAOA/MViCItm8p47w9BkcBSxhxyLUuJhBb+U8WPe0pm7bM5OpCnPPcGLmNfXiu8fLfXbtT0Zy06uRRNEX+lbLs/zwHcfj2DTvQ9vNfCSD0jxVXtIiD6puNW/gKCc81wSU3Ye6XhYiZdurHtZYHBOCSgiwihE/wb+qYCHjeMGeTBEtYLyE6LCfrKA6u9sIrw2K7wBamydAyXA+3Fxjevrt/YemR6SPM5AKPMrCxvoWOwtiNgyx3E=
 before_install:
   - |
-    if ! test -f "$HOME/.local/bin/stack"
+    if test ! -f "$HOME/.local/bin/stack"
     then
-      curl --location 'https://www.stackage.org/stack/linux-x86_64' > stack.tar.gz
+      VERSION=1.6.5
+      URL="https://github.com/commercialhaskell/stack/releases/download/v$VERSION/stack-$VERSION-$TRAVIS_OS_NAME-x86_64.tar.gz"
+      cd /tmp
+      curl --location "$URL" > stack.tar.gz
       gunzip stack.tar.gz
       tar --extract --file stack.tar --strip-components 1
       mkdir --parents "$HOME/.local/bin"
-      mv stack "$HOME/.local/bin/"
-      rm stack.tar
+      mv stack "$HOME/.local/bin"
+      cd -
     fi
-    stack --version
+  - stack --version
 install:
   - stack setup
   - stack build --only-dependencies --test
-
 script:
   - stack build --pedantic --test
   - stack sdist
-
 after_success:
-  - |
-    if test "$TRAVIS_TAG"
-    then
-      mkdir --parents "$HOME/.stack/upload"
-      echo "{ \"username\": \"$HACKAGE_USERNAME\", \"password\": \"$HACKAGE_PASSWORD\" }" > "$HOME/.stack/upload/credentials.json"
-      stack upload .
-    fi
+  - mkdir -p deploy
+  - cp -v "$(stack path --dist-dir)/derulo-$TRAVIS_TAG.tar.gz" deploy/derulo.tgz
+  - cp -v "$(stack exec which derulo)" deploy/derulo
+  - mkdir -p "$HOME/.stack/upload"
+  - >-
+    echo "{
+    \"username\": \"$HACKAGE_USERNAME\",
+    \"password\": \"$HACKAGE_PASSWORD\"
+    }" > "$HOME/.stack/upload/credentials.json"
+deploy:
+  - skip_cleanup: true
+    on: { tags: true }
+    provider: releases
+    api_key: { secure: gMpXwQFIbf8KONGqzFu4jdqDtZZwsNSbBRiYKWqllMzqYyRvXWMRSIBGcVb91JBkkZzcoI05/PYnENgxiUN2oB5jBKpMhlwRaWlG0WFXAAVuObXTiNLFM7q/PydYNqw0p5H8Z2SRuKqKVzFnMJH8nr+OHR+oE0iLlAspi6paEbMXH9zyt0IJmmn/kwfyG2rhSGZlu+dOb022IDbaFeRuDeC9nnTXmbmvJ9ddnoysH9vL34FRBuVM1lnZ095nQwkgjq4FOPuf0Xvs1opyriPv9jaMdjm3a1+QVgLcm5P0uRvYk1flCbheAtInT7RUP5x3gHWa9AM7AW8EBDiILiDkPdC11rTVfuYoyr+DldMmH7mB4S26OTViW7uXtIcUcAGIGsffI2f2yF097dW53Po+edsx0+RcRcRlFaaZ5BRBysuoyOO80lgqmNKNlF2ToUpeW7doL8oCzrhE7PHfcsGuyQSYfjKUtTCyYxpnxSTC3owND/Ztg9VLiPHXEaWLKDx1HC/hmnsD2uk+QduWJ5HWPerWmpsbQJdBGK1nOvxrzpVZR+3eH+ZBkIbJXWXWRWdQDJKGqhmHi6n5SiXuUlndLuK9pTv09f5Evg+JwGc/USaMSjh/iW6RoBUTzt8DXRjH/JajQ54XRWWbFUvE4e14P77miur4gkA0F8lPRHH5wMc= }
+    file:
+      - deploy/derulo.tgz
+      - deploy/derulo
+  - skip_cleanup: true
+    on: { tags: true }
+    provider: script
+    script: stack upload .

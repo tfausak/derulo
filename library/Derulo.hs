@@ -21,7 +21,11 @@
 --
 -- >>> showJSON Null
 -- "null"
-module Derulo where
+module Derulo
+  ( JSON(..)
+  , readJSON
+  , showJSON
+  ) where
 
 import qualified Control.Monad as Monad
 import qualified Data.Data as Data
@@ -41,7 +45,7 @@ data JSON
   | String String
   | Array [JSON]
   | Object [(String, JSON)]
-  deriving (Data.Data, Eq, Generics.Generic, Ord, Read, Show, Data.Typeable)
+  deriving (Data.Data, Eq, Generics.Generic, Ord, Read, Show)
 
 -- * Parsing
 -- | Parses a string as JSON.
