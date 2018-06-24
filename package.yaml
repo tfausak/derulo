@@ -37,7 +37,7 @@ executable:
 tests:
   test:
     dependencies:
-      doctest: '>= 0.11.0 && < 0.16'
+      doctest: '>= 0.11.0 && < 0.17'
     ghc-options:
       - -rtsopts
       - -threaded
