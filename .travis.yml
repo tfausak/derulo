@@ -46,12 +46,5 @@ after_success:
 deploy:
   - skip_cleanup: true
     on: { tags: true }
-    provider: releases
-    api_key: { secure: gMpXwQFIbf8KONGqzFu4jdqDtZZwsNSbBRiYKWqllMzqYyRvXWMRSIBGcVb91JBkkZzcoI05/PYnENgxiUN2oB5jBKpMhlwRaWlG0WFXAAVuObXTiNLFM7q/PydYNqw0p5H8Z2SRuKqKVzFnMJH8nr+OHR+oE0iLlAspi6paEbMXH9zyt0IJmmn/kwfyG2rhSGZlu+dOb022IDbaFeRuDeC9nnTXmbmvJ9ddnoysH9vL34FRBuVM1lnZ095nQwkgjq4FOPuf0Xvs1opyriPv9jaMdjm3a1+QVgLcm5P0uRvYk1flCbheAtInT7RUP5x3gHWa9AM7AW8EBDiILiDkPdC11rTVfuYoyr+DldMmH7mB4S26OTViW7uXtIcUcAGIGsffI2f2yF097dW53Po+edsx0+RcRcRlFaaZ5BRBysuoyOO80lgqmNKNlF2ToUpeW7doL8oCzrhE7PHfcsGuyQSYfjKUtTCyYxpnxSTC3owND/Ztg9VLiPHXEaWLKDx1HC/hmnsD2uk+QduWJ5HWPerWmpsbQJdBGK1nOvxrzpVZR+3eH+ZBkIbJXWXWRWdQDJKGqhmHi6n5SiXuUlndLuK9pTv09f5Evg+JwGc/USaMSjh/iW6RoBUTzt8DXRjH/JajQ54XRWWbFUvE4e14P77miur4gkA0F8lPRHH5wMc= }
-    file:
-      - deploy/derulo.tgz
-      - deploy/derulo
-  - skip_cleanup: true
-    on: { tags: true }
     provider: script
     script: stack upload --no-signature .
