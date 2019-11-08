@@ -15,12 +15,16 @@ maintainer: Taylor Fausak
 synopsis: Parse and render JSON simply.
 
 dependencies:
-  base: '>= 4.9.0 && < 4.13'
+  base: '>= 4.9.0 && < 4.14'
 ghc-options:
   - -Weverything
   - -Wno-implicit-prelude
   - -Wno-safe
   - -Wno-unsafe
+
+when:
+  - condition: impl(ghc >= 8.8.1)
+    ghc-options: -Wno-missing-deriving-strategies
 
 library:
   source-dirs: library
