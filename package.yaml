@@ -15,7 +15,7 @@ maintainer: Taylor Fausak
 synopsis: Parse and render JSON simply.
 
 dependencies:
-  base: '>= 4.9.0 && < 4.14'
+  base: '>= 4.9.0 && < 4.15'
 ghc-options:
   - -Weverything
   - -Wno-implicit-prelude
