@@ -1,50 +1,47 @@
-sudo: false
+os: linux
+dist: bionic
 language: generic
 addons:
   apt:
     packages:
       - libgmp-dev
-cache:
-  directories:
-    - "$HOME/.local/bin"
-    - "$HOME/.stack"
 env:
   global:
     - HACKAGE_USERNAME=fozworth
+    # HACKAGE_PASSWORD
     - secure: MbNiNmL13TVy0ePEmU6A4dv37tTbzzoEoW6GxufeMXp0B3y1acHlmAQuyoXSdLU6lyOAF4B/jBWVhrFxL8hX6lCPTJWsz4sqqzujetlhLAh34ftEwFEeoLH/gRaLaVyu3D10lhzxPIs8D3hPGwM/+9K6+BBvNe/eC51HadYXHKnP97V5Gt2Wpt4dU8Y0stlUKRGtBipvCekJvyygoIPhUhxsEDPhCkScdkJbsqTjqoyv61A7r1szkIZ43aF6QB0uGsKXb205MGke0QQfF7/ECzBmLhmIOVT1y05eLuFgn+/mcPxYODdJqoMxLaE3lPdfvBhDvO/Qv41TvV9n85WssbHdwKi78JjT553+KgrjX7imfJf3WiwlVbwW8wumbAluvHiDdpmycZTXue+AB4vZgRyyihgTltDXeuuZ+2N+fuR9w96DmAU2Q32gRAOA/MViCItm8p47w9BkcBSxhxyLUuJhBb+U8WPe0pm7bM5OpCnPPcGLmNfXiu8fLfXbtT0Zy06uRRNEX+lbLs/zwHcfj2DTvQ9vNfCSD0jxVXtIiD6puNW/gKCc81wSU3Ye6XhYiZdurHtZYHBOCSgiwihE/wb+qYCHjeMGeTBEtYLyE6LCfrKA6u9sIrw2K7wBamydAyXA+3Fxjevrt/YemR6SPM5AKPMrCxvoWOwtiNgyx3E=
+cache:
+  directories:
+    - $HOME/.local/bin
+    - $HOME/.stack
+
 before_install:
   - |
-    if test ! -f "$HOME/.local/bin/stack"
+    if ! test -f "$HOME/.local/bin/stack"
     then
-      VERSION=1.9.1
-      URL="https://github.com/commercialhaskell/stack/releases/download/v$VERSION/stack-$VERSION-$TRAVIS_OS_NAME-x86_64.tar.gz"
-      cd /tmp
-      curl --location "$URL" > stack.tar.gz
+      VERSION=2.3.0.1
+      URL="https://github.com/commercialhaskell/stack/releases/download/v$VERSION/stack-$VERSION-linux-x86_64-static.tar.gz"
+      curl --location --output stack.tar.gz "$URL"
       gunzip stack.tar.gz
       tar --extract --file stack.tar --strip-components 1
       mkdir --parents "$HOME/.local/bin"
       mv stack "$HOME/.local/bin"
-      cd -
+      rm stack.tar
     fi
   - stack --version
+
 install:
   - stack setup
   - stack build --only-dependencies --test
+
 script:
-  - stack build --pedantic --test
+  - stack build --no-run-tests --pedantic --test
+  - stack build --test
   - stack sdist
-after_success:
-  - mkdir -p deploy
-  - cp -v "$(stack path --dist-dir)/derulo-$TRAVIS_TAG.tar.gz" deploy/derulo.tgz
-  - cp -v "$(stack exec which derulo)" deploy/derulo
-  - mkdir -p "$HOME/.stack/upload"
-  - >-
-    echo "{
-    \"username\": \"$HACKAGE_USERNAME\",
-    \"password\": \"$HACKAGE_PASSWORD\"
-    }" > "$HOME/.stack/upload/credentials.json"
+
 deploy:
-  - skip_cleanup: true
-    on: { tags: true }
-    provider: script
-    script: stack upload --no-signature .
+  provider: script
+  on:
+    tags: true
+  skip_cleanup: true
+  script: yes | stack upload .
