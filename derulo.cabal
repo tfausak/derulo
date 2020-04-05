@@ -1,0 +1,52 @@
+name: derulo
+version: 1.0.8
+
+synopsis: Parse and render JSON simply.
+description: Derulo parses and renders JSON simply.
+
+build-type: Simple
+cabal-version: >= 1.10
+category: JSON
+extra-source-files: README.markdown
+license-file: LICENSE.markdown
+license: MIT
+maintainer: Taylor Fausak
+
+source-repository head
+  type: git
+  location: https://github.com/tfausak/derulo
+
+library
+  autogen-modules: Paths_derulo
+  build-depends:
+    base >= 4.9.0 && < 4.15
+  default-language: Haskell98
+  exposed-modules: Derulo
+  ghc-options:
+    -Weverything
+    -Wno-implicit-prelude
+    -Wno-safe
+    -Wno-unsafe
+  hs-source-dirs: src/lib
+  other-modules: Paths_derulo
+
+  if impl(ghc >= 8.8.1)
+    ghc-options:
+      -Wno-missing-deriving-strategies
+
+executable derulo
+  build-depends:
+    base -any,
+    derulo -any
+  default-language: Haskell98
+  hs-source-dirs: src/exe
+  main-is: Main.hs
+
+test-suite test
+  build-depends:
+    base -any
+    , doctest >=0.11.0 && <0.17
+  default-language: Haskell98
+  hs-source-dirs: src/test
+  main-is: Main.hs
+  type: exitcode-stdio-1.0
