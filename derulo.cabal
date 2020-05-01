@@ -28,11 +28,11 @@ library
     -Wno-unsafe
   hs-source-dirs: src/lib
 
-  if impl(ghc >= 8.8.1)
+  if impl(ghc >= 8.8)
     ghc-options:
       -Wno-missing-deriving-strategies
 
-  if impl(ghc >= 8.10.1)
+  if impl(ghc >= 8.10)
     ghc-options:
       -Wno-missing-safe-haskell-mode
       -Wno-prepositive-qualified-module
