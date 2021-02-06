@@ -1,7 +1,7 @@
 cabal-version: >= 1.10
 
 name: derulo
-version: 1.0.9
+version: 1.0.10
 
 synopsis: Parse and render JSON simply.
 description: Derulo parses and renders JSON simply.
