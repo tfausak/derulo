@@ -50,7 +50,7 @@ data JSON
 -- * Parsing
 -- | Parses a string as JSON.
 readJSON :: String -> Maybe JSON
-readJSON string = runParser pJSON string
+readJSON = runParser pJSON
 
 pJSON :: ReadP.ReadP JSON
 pJSON = do
@@ -127,12 +127,13 @@ pPower = do
 
 pString :: ReadP.ReadP JSON
 pString = do
-  string <-
-    ReadP.between
-      (ReadP.char '"')
-      (ReadP.char '"')
-      (do characters <- ReadP.many pCharacter
-          pure (String characters))
+  string <- ReadP.between
+    (ReadP.char '"')
+    (ReadP.char '"')
+    (do
+      characters <- ReadP.many pCharacter
+      pure (String characters)
+    )
   pWhitespaces
   pure string
 
@@ -163,20 +164,22 @@ pEscape = do
     _ -> ReadP.pfail
 
 pArray :: ReadP.ReadP JSON
-pArray =
-  ReadP.between
-    (pSymbol "[")
-    (pSymbol "]")
-    (do values <- ReadP.sepBy pValue (pSymbol ",")
-        pure (Array values))
+pArray = ReadP.between
+  (pSymbol "[")
+  (pSymbol "]")
+  (do
+    values <- ReadP.sepBy pValue (pSymbol ",")
+    pure (Array values)
+  )
 
 pObject :: ReadP.ReadP JSON
-pObject =
-  ReadP.between
-    (pSymbol "{")
-    (pSymbol "}")
-    (do pairs <- ReadP.sepBy pPair (pSymbol ",")
-        pure (Object pairs))
+pObject = ReadP.between
+  (pSymbol "{")
+  (pSymbol "}")
+  (do
+    pairs <- ReadP.sepBy pPair (pSymbol ",")
+    pure (Object pairs)
+  )
 
 pPair :: ReadP.ReadP (String, JSON)
 pPair = do
@@ -191,23 +194,19 @@ showJSON :: JSON -> String
 showJSON json = sJSON json ""
 
 sJSON :: JSON -> ShowS
-sJSON json =
-  case json of
-    Null -> sNull
-    Boolean boolean -> sBoolean boolean
-    Number mantissa magnitude -> sNumber mantissa magnitude
-    String string -> sString string
-    Array array -> sArray array
-    Object object -> sObject object
+sJSON json = case json of
+  Null -> sNull
+  Boolean boolean -> sBoolean boolean
+  Number mantissa magnitude -> sNumber mantissa magnitude
+  String string -> sString string
+  Array array -> sArray array
+  Object object -> sObject object
 
 sNull :: ShowS
 sNull = showString "null"
 
 sBoolean :: Bool -> ShowS
-sBoolean boolean =
-  if boolean
-    then sTrue
-    else sFalse
+sBoolean boolean = if boolean then sTrue else sFalse
 
 sTrue :: ShowS
 sTrue = showString "true"
@@ -219,87 +218,75 @@ sNumber :: Integer -> Integer -> ShowS
 sNumber mantissa magnitude = shows mantissa . showChar 'e' . shows magnitude
 
 sString :: String -> ShowS
-sString string =
-  sSeparatedBetween (showChar '"') (showChar '"') id sCharacter string
+sString = sSeparatedBetween (showChar '"') (showChar '"') id sCharacter
 
 sCharacter :: Char -> ShowS
-sCharacter character =
-  case character of
-    '"' -> showString "\\\""
-    '\\' -> showString "\\\\"
-    '\b' -> showString "\\b"
-    '\f' -> showString "\\f"
-    '\n' -> showString "\\n"
-    '\r' -> showString "\\r"
-    '\t' -> showString "\\t"
-    _ ->
-      if isControl character
-        then showString "\\u" .
-             showString
-               (padLeft
-                  4
-                  '0'
-                  (toHexadecimal (fromIntegral (fromEnum character))))
-        else showChar character
+sCharacter character = case character of
+  '"' -> showString "\\\""
+  '\\' -> showString "\\\\"
+  '\b' -> showString "\\b"
+  '\f' -> showString "\\f"
+  '\n' -> showString "\\n"
+  '\r' -> showString "\\r"
+  '\t' -> showString "\\t"
+  _ -> if isControl character
+    then showString "\\u" . showString
+      (padLeft 4 '0' (toHexadecimal (fromIntegral (fromEnum character))))
+    else showChar character
 
 sArray :: [JSON] -> ShowS
-sArray array =
-  sSeparatedBetween (showChar '[') (showChar ']') (showChar ',') sJSON array
+sArray = sSeparatedBetween (showChar '[') (showChar ']') (showChar ',') sJSON
 
 sObject :: [(String, JSON)] -> ShowS
-sObject object =
-  sSeparatedBetween (showChar '{') (showChar '}') (showChar ',') sPair object
+sObject = sSeparatedBetween (showChar '{') (showChar '}') (showChar ',') sPair
 
 sPair :: (String, JSON) -> ShowS
 sPair (key, value) = sString key . showChar ':' . sJSON value
 
 -- * Helpers
 fromBase :: Integer -> (Char -> Maybe Integer) -> String -> Maybe Integer
-fromBase b f s =
-  Monad.foldM
-    (\n c -> do
-       d <- f c
-       pure (b * n + d))
-    0
-    s
+fromBase b f = Monad.foldM
+  (\n c -> do
+    d <- f c
+    pure (b * n + d)
+  )
+  0
 
 fromDecimal :: String -> Maybe Integer
-fromDecimal s = fromBase 10 fromDecimalDigit s
+fromDecimal = fromBase 10 fromDecimalDigit
 
 fromDecimalDigit :: Char -> Maybe Integer
-fromDecimalDigit c =
-  case c of
-    '0' -> Just 0
-    '1' -> Just 1
-    '2' -> Just 2
-    '3' -> Just 3
-    '4' -> Just 4
-    '5' -> Just 5
-    '6' -> Just 6
-    '7' -> Just 7
-    '8' -> Just 8
-    '9' -> Just 9
-    _ -> Nothing
+fromDecimalDigit c = case c of
+  '0' -> Just 0
+  '1' -> Just 1
+  '2' -> Just 2
+  '3' -> Just 3
+  '4' -> Just 4
+  '5' -> Just 5
+  '6' -> Just 6
+  '7' -> Just 7
+  '8' -> Just 8
+  '9' -> Just 9
+  _ -> Nothing
 
 fromHexadecimal :: String -> Maybe Integer
-fromHexadecimal s = fromBase 16 fromHexadecimalDigit s
+fromHexadecimal = fromBase 16 fromHexadecimalDigit
 
 fromHexadecimalDigit :: Char -> Maybe Integer
-fromHexadecimalDigit c =
-  case c of
-    'A' -> Just 10
-    'B' -> Just 11
-    'C' -> Just 12
-    'D' -> Just 13
-    'E' -> Just 14
-    'F' -> Just 15
-    'a' -> Just 10
-    'b' -> Just 11
-    'c' -> Just 12
-    'd' -> Just 13
-    'e' -> Just 14
-    'f' -> Just 15
-    _ -> fromDecimalDigit c
+fromHexadecimalDigit c = case c of
+  'A' -> Just 10
+  'B' -> Just 11
+  'C' -> Just 12
+  'D' -> Just 13
+  'E' -> Just 14
+  'F' -> Just 15
+  'a' -> Just 10
+  'b' -> Just 11
+  'c' -> Just 12
+  'd' -> Just 13
+  'e' -> Just 14
+  'f' -> Just 15
+  _ -> fromDecimalDigit c
 
 isControl :: Char -> Bool
 isControl c = '\x00' <= c && c <= '\x1f'
@@ -321,10 +308,7 @@ isWhitespace :: Char -> Bool
 isWhitespace c = c == '\t' || c == '\n' || c == '\r' || c == ' '
 
 negateIf :: Bool -> Integer -> Integer
-negateIf p n =
-  if p
-    then negate n
-    else n
+negateIf p n = if p then negate n else n
 
 pSymbol :: String -> ReadP.ReadP ()
 pSymbol s = do
@@ -338,71 +322,62 @@ padLeft :: Integer -> a -> [a] -> [a]
 padLeft n x ys = reverse (padRight n x (reverse ys))
 
 padRight :: Integer -> a -> [a] -> [a]
-padRight n x ys =
-  if n <= 0
-    then ys
-    else case ys of
-           [] -> x : padRight (n - 1) x ys
-           y:zs -> y : padRight (n - 1) x zs
+padRight n x ys = if n <= 0
+  then ys
+  else case ys of
+    [] -> x : padRight (n - 1) x ys
+    y : zs -> y : padRight (n - 1) x zs
 
 runParser :: ReadP.ReadP a -> String -> Maybe a
-runParser p s =
-  Maybe.listToMaybe
-    (Maybe.mapMaybe
-       (\(x, t) ->
-          if null t
-            then Just x
-            else Nothing)
-       (ReadP.readP_to_S p s))
+runParser p s = Maybe.listToMaybe
+  (Maybe.mapMaybe
+    (\(x, t) -> if null t then Just x else Nothing)
+    (ReadP.readP_to_S p s)
+  )
 
 sBetween :: ShowS -> ShowS -> (anything -> ShowS) -> anything -> ShowS
 sBetween left right render it = left . render it . right
 
 sSeparated :: ShowS -> (element -> ShowS) -> [element] -> ShowS
-sSeparated separator render elements =
-  case elements of
-    [] -> id
-    [element] -> render element
-    element:rest ->
-      render element . separator . sSeparated separator render rest
+sSeparated separator render elements = case elements of
+  [] -> id
+  [element] -> render element
+  element : rest ->
+    render element . separator . sSeparated separator render rest
 
-sSeparatedBetween ::
-     ShowS -> ShowS -> ShowS -> (element -> ShowS) -> [element] -> ShowS
-sSeparatedBetween left right separator render elements =
-  sBetween left right (sSeparated separator render) elements
+sSeparatedBetween
+  :: ShowS -> ShowS -> ShowS -> (element -> ShowS) -> [element] -> ShowS
+sSeparatedBetween left right separator render =
+  sBetween left right (sSeparated separator render)
 
 toBase :: Integer -> (Integer -> Maybe Char) -> Integer -> String
 toBase b f n =
-  if n == 0
-    then [Maybe.fromJust (f n)]
-    else reverse (toBase' b f n)
+  if n == 0 then [Maybe.fromJust (f n)] else reverse (toBase' b f n)
 
 toBase' :: Integer -> (Integer -> Maybe Char) -> Integer -> String
-toBase' b f n =
-  case quotRem n b of
-    (0, 0) -> ""
-    (q, r) -> Maybe.fromJust (f r) : toBase' b f q
+toBase' b f n = case quotRem n b of
+  (0, 0) -> ""
+  (q, r) -> Maybe.fromJust (f r) : toBase' b f q
 
 toHexadecimal :: Integer -> String
-toHexadecimal n = toBase 16 toHexadecimalDigit n
+toHexadecimal = toBase 16 toHexadecimalDigit
 
 toHexadecimalDigit :: Integer -> Maybe Char
-toHexadecimalDigit n =
-  case n of
-    0 -> Just '0'
-    1 -> Just '1'
-    2 -> Just '2'
-    3 -> Just '3'
-    4 -> Just '4'
-    5 -> Just '5'
-    6 -> Just '6'
-    7 -> Just '7'
-    8 -> Just '8'
-    9 -> Just '9'
-    10 -> Just 'a'
-    11 -> Just 'b'
-    12 -> Just 'c'
-    13 -> Just 'd'
-    14 -> Just 'e'
-    15 -> Just 'f'
-    _ -> Nothing
+toHexadecimalDigit n = case n of
+  0 -> Just '0'
+  1 -> Just '1'
+  2 -> Just '2'
+  3 -> Just '3'
+  4 -> Just '4'
+  5 -> Just '5'
+  6 -> Just '6'
+  7 -> Just '7'
+  8 -> Just '8'
+  9 -> Just '9'
+  10 -> Just 'a'
+  11 -> Just 'b'
+  12 -> Just 'c'
+  13 -> Just 'd'
+  14 -> Just 'e'
+  15 -> Just 'f'
+  _ -> Nothing
