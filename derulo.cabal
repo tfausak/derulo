@@ -1,10 +1,13 @@
 cabal-version: 2.2
 
 name: derulo
-version: 2.0.0.2
+version: 2.0.0.3
 
 synopsis: Parse and render JSON simply.
-description: Derulo parses and renders JSON simply.
+description:
+  Warning: This package is not maintained anymore.
+  .
+  Derulo parses and renders JSON simply.
 
 build-type: Simple
 category: JSON
